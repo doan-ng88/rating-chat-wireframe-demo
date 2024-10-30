@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salework Chat - Product Review Management</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f9;
+        }
+        /* Header Styling */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background-color: #ffffff;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 1000;
+        }
+        .header .app-name {
+            font-size: 1.5em;
+            font-weight: 600;
+            color: #0d6efd;
+        }
+        /* Sidebar Styling */
+        .sidebar {
+            width: 80px;
+            background-color: #ffffff;
+            border-right: 1px solid #dee2e6;
+            height: calc(100vh - 60px);
+            position: fixed;
+            top: 60px;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 20px;
+        }
+        .sidebar .nav-link {
+            color: #495057;
+            text-align: center;
+            padding: 15px 0;
+            font-size: 20px;
+            width: 100%;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .sidebar .nav-link:hover {
+            background-color: #f1f1f1;
+            color: #0d6efd;
+        }
+        .sidebar .nav-link.active {
+            background-color: #0d6efd;
+            color: #ffffff;
+        }
+        /* Main Content Styling */
+        .main-content {
+            margin-left: 80px;
+            margin-top: 60px;
+            padding: 20px;
+            height: calc(100vh - 60px);
+            overflow-y: auto;
+        }
+        /* Filter and Search Bar Styling */
+        .filter-bar {
+            background-color: #ffffff;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .filter-bar .nav-tabs .nav-link {
+            color: #495057;
+            font-weight: 500;
+        }
+        .filter-bar .nav-tabs .nav-link.active {
+            background-color: #0d6efd;
+            color: #ffffff;
+            border-color: #0d6efd;
+        }
+        .filter-bar .filter-options .form-control {
+            margin-bottom: 10px;
+        }
+        /* Review List Styling */
+        .review-list {
+            background-color: #ffffff;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .review-item {
+            border-bottom: 1px solid #dee2e6;
+            padding: 15px 0;
+        }
+        .review-item:last-child {
+            border-bottom: none;
+        }
+        .review-content {
+            position: relative;
+        }
+        .review-content .see-more {
+            color: #0d6efd;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+        .review-info {
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+        .star-rating i {
+            color: #ffc107;
+        }
+        .product-info, .order-info {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .product-info img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        .order-info img.store-logo {
+            width: 30px;
+            height: 30px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .response-section {
+            margin-top: 15px;
+        }
+        .response-section textarea {
+            resize: none;
+            height: 60px;
+            border-radius: 5px;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            transition: border-color 0.3s;
+        }
+        .response-section textarea:focus {
+            border-color: #0d6efd;
+            box-shadow: none;
+        }
+        .response-section .btn {
+            margin-top: 10px;
+            margin-right: 10px;
+        }
+        /* Pagination Styling */
+        .pagination-control {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: #ced4da;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: #adb5bd;
+        }
+        /* Responsive Adjustments */
+        @media (max-width: 1200px) {
+            .sidebar {
+                display: none;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header d-flex align-items-center">
+        <div class="app-name">Salework Chat</div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar d-flex flex-column align-items-center">
+        <a href="#" class="nav-link"><i class="fab fa-facebook-f"></i></a>
+        <a href="#" class="nav-link"><i class="fab fa-instagram"></i></a>
+        <a href="#" class="nav-link"><i class="fas fa-box"></i></a>
+        <a href="#" class="nav-link"><i class="fas fa-shopping-cart"></i></a>
+        <a href="#" class="nav-link"><i class="fab fa-tiktok"></i></a>
+        <a href="#" class="nav-link active" title="Đánh giá"><i class="fas fa-star"></i></a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Filter and Search Bar -->
+        <div class="filter-bar">
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <select class="form-select">
+                        <option selected>Tất cả cửa hàng</option>
+                        <option value="1">Cửa hàng 1</option>
+                        <option value="2">Cửa hàng 2</option>
+                        <!-- Add more stores as needed -->
+                    </select>
+                </div>
+                <div class="col-md-9">
+                    <ul class="nav nav-tabs mb-3" id="reviewTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab" aria-controls="all" aria-selected="true">Tất cả (120)</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="answered-tab" data-bs-toggle="tab" data-bs-target="#answered" type="button" role="tab" aria-controls="answered" aria-selected="false">Đã trả lời (80)</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="unanswered-tab" data-bs-toggle="tab" data-bs-target="#unanswered" type="button" role="tab" aria-controls="unanswered" aria-selected="false">Chưa trả lời (40)</button>
+                        </li>
+                    </ul>
+                    <div class="filter-options row">
+                        <div class="col-md-3 mb-2">
+                            <select class="form-select">
+                                <option selected>Rating</option>
+                                <option value="1">1 Star</option>
+                                <option value="2">2 Stars</option>
+                                <option value="3">3 Stars</option>
+                                <option value="4">4 Stars</option>
+                                <option value="5">5 Stars</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <input type="text" class="form-control" placeholder="Nội dung đánh giá">
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <input type="date" class="form-control" placeholder="Từ ngày">
+                        </div>
+                        <div class="col-md-2 mb-2">
+                            <input type="date" class="form-control" placeholder="Đến ngày">
+                        </div>
+                    </div>
+                    <div class="search-bar mt-3">
+                        <input type="text" class="form-control" placeholder="Tìm kiếm theo Order ID hoặc Nội dung đánh giá">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Review List -->
+        <div class="review-list">
+            <!-- Example Review Item -->
+            <div class="review-item">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="review-content">
+                            <p>
+                                Sản phẩm rất tốt, chất lượng vượt ngoài mong đợi. Tuy nhiên, thời gian giao hàng hơi lâu. 
+                                <span class="see-more" onclick="toggleSeeMore(this)">Xem thêm</span>
+                            </p>
+                            <div class="review-info">
+                                <i class="fas fa-sync-alt text-muted" title="Reload"></i> 
+                                Đã đánh giá vào 29/10/2024 00:31
+                            </div>
+                        </div>
+                        <div class="star-rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        </div>
+                        <div class="product-info">
+                            <img src="https://via.placeholder.com/60" alt="Product Image">
+                            <div>
+                                <div><strong>Tên sản phẩm:</strong> Áo Thun Nam</div>
+                                <div><strong>ID sản phẩm:</strong> PROD12345</div>
+                            </div>
+                        </div>
+                        <div class="order-info">
+                            <img src="https://via.placeholder.com/30" alt="Store Logo" class="store-logo">
+                            <div>
+                                <div><strong>ID đơn hàng:</strong> ORDER67890</div>
+                                <div><strong>Ngày tạo:</strong> 28/10/2024</div>
+                                <div><strong>Khách hàng:</strong> *****@example.com</div>
+                                <div><strong>Store:</strong> <img src="https://via.placeholder.com/20" alt="Store Logo"> Cửa hàng 1</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="response-section">
+                            <textarea class="form-control" placeholder="Viết phản hồi..."></textarea>
+                            <button class="btn btn-primary btn-sm"><i class="fas fa-reply"></i> Trả lời</button>
+                            <button class="btn btn-secondary btn-sm"><i class="fas fa-envelope"></i> Tin nhắn</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Add more review items as needed -->
+            <div class="review-item">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="review-content">
+                            <p>
+                                Giao hàng nhanh chóng, sản phẩm đúng như mô tả. Cảm ơn shop!
+                            </p>
+                            <div class="review-info">
+                                <i class="fas fa-sync-alt text-muted" title="Reload"></i> 
+                                Đã đánh giá vào 28/10/2024 14:22
+                            </div>
+                        </div>
+                        <div class="star-rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="product-info">
+                            <img src="https://via.placeholder.com/60" alt="Product Image">
+                            <div>
+                                <div><strong>Tên sản phẩm:</strong> Giày Thể Thao</div>
+                                <div><strong>ID sản phẩm:</strong> PROD67890</div>
+                            </div>
+                        </div>
+                        <div class="order-info">
+                            <img src="https://via.placeholder.com/30" alt="Store Logo" class="store-logo">
+                            <div>
+                                <div><strong>ID đơn hàng:</strong> ORDER12345</div>
+                                <div><strong>Ngày tạo:</strong> 27/10/2024</div>
+                                <div><strong>Khách hàng:</strong> *****@example.com</div>
+                                <div><strong>Store:</strong> <img src="https://via.placeholder.com/20" alt="Store Logo"> Cửa hàng 2</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="response-section">
+                            <textarea class="form-control" placeholder="Viết phản hồi..."></textarea>
+                            <button class="btn btn-primary btn-sm"><i class="fas fa-reply"></i> Trả lời</button>
+                            <button class="btn btn-secondary btn-sm"><i class="fas fa-envelope"></i> Tin nhắn</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- More reviews can be added similarly -->
+        </div>
+
+        <!-- Pagination Control -->
+        <div class="pagination-control d-flex justify-content-between align-items-center">
+            <nav>
+                <ul class="pagination">
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1"><i class="fas fa-chevron-left"></i></a>
+                    </li>
+                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                    <li class="page-item"><a class="page-link" href="#">...</a></li>
+                    <li class="page-item">
+                        <a class="page-link" href="#"><i class="fas fa-chevron-right"></i></a>
+                    </li>
+                </ul>
+            </nav>
+            <div>
+                <select class="form-select form-select-sm" style="width: 80px;">
+                    <option selected>25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS and dependencies (Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Toggle "See more" functionality
+        function toggleSeeMore(element) {
+            const parent = element.parentElement;
+            const fullText = "Sản phẩm rất tốt, chất lượng vượt ngoài mong đợi. Tuy nhiên, thời gian giao hàng hơi lâu.";
+            const shortText = "Sản phẩm rất tốt, chất lượng vượt ngoài mong đợi. Tuy nhiên, thời gian giao hàng hơi lâu.";
+            if (element.textContent === "Xem thêm") {
+                parent.querySelector('p').textContent = fullText;
+                element.textContent = "Ẩn bớt";
+            } else {
+                parent.querySelector('p').textContent = shortText;
+                element.textContent = "Xem thêm";
+            }
+        }
+    </script>
+</body>
+</html>
